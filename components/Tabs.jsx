@@ -1,127 +1,41 @@
-import React, { useState, useEffect} from 'react';
-import styled from 'styled-components'
+import React, { useState, useContext} from 'react';
+import styled from 'styled-components';
+import { useIntrospection } from './IntrospectionContext.jsx'
 
-const Wrapper = styled.section`
-  display:flex;
-  flex-direction:column;   
-`;
 const TabsWrapper = styled.section`
   display:flex;
 `;
-const DisplayWindow = styled.section`
-  display:flex;
-  flex-direction:column;
-`;
-const CheckBox = styled.input`
-  display:flex-inline;
-`;
-const Operation = styled.label`
-  display:flex-inline  
-  color:blue
-`;
 
-const ConfigWrapper = styled.section`
-  display:flex;
-`;
+const Tabs = props => {
 
-const CodeWrapper = styled.section`
-  display:flex;
-`;
+  const types = useIntrospection();
+  const tabsArray = [];  
+  const setCurrentTab = props;
 
-const Code = styled.code`
-  background-colorg:black;
-`;
-const introspectionQuery = {"query" : "{__schema {queryType {name fields {name}}mutationType {name fields {name}}}}"};
-
-const Tabs = () => {  
-  
-  const [userData, setUserData] = useState({});
-  const [currentTab, setCurrentTab] = useState("");
-  const [currentOperations, setCurrentOperations] = useState({})
-  const [checked, setChecked] = useState(false)
-
-  useEffect(()=>{
-  },[currentTab])
-
-  useEffect(()=> {
-    getIntrospection();
-  }, [])
-
-  const checkSwitch = () => {
-    if(checked === false){
-      
-    }
+  const handleClick = (id) =>{
+    setCurrentTab(id)
   }
 
-  const getIntrospection = async () => {
-    console.log('in introspection')
-    const rawResponse = await fetch('https://api.spacex.land/graphql/', {
-     method: 'POST',     
-     headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-     },
-      body: JSON.stringify(introspectionQuery),
-      
-    });
-    const response = await rawResponse.json();
-    console.log(response)
-    setUserData(response.data.__schema)
-  }
-  console.log(userData)
-  const tabsArray = [];
-  let displayedOperations = [];
-  const operationsObj = {};
-  
-  
-  
-    Object.values(userData).forEach(el => {
-      if(el){
-        if(Object.values(el)) {
+  console.log('log', setCurrentTab)
+
+    Object.values(types).forEach(type => {
+      if(type){
+        if(Object.values(type)) {
           tabsArray.push(
           <button 
-          key={Object.values(el)[0].toLowerCase()}
-          id ={Object.values(el)[0]}
-          onClick={(e)=> setCurrentTab(e.currentTarget.id)}
-          
-          >{Object.values(el)[0]}</button>,
-          
-          
+          key={Object.values(type)[0].toLowerCase()}
+          id ={Object.values(type)[0]}
+          onClick={(e)=> handleClick(e.currentTarget.id)}          
+          >{Object.values(type)[0]}</button>,          
           )
-          operationsObj[Object.values(el)[0]] = Object.values(el)[1]
         }
-      }
-            
-    })
-  if(Object.keys(operationsObj).includes(currentTab)) {
-    operationsObj[currentTab].forEach((el,idx)=>{displayedOperations.push(    
-    <Operation>
-      <CheckBox 
-      type="checkbox" 
-      className="checkbox" 
-      id={`${currentTab}checkbox${idx}`} 
-      onChange={()=> checkSwitch()}
-      />
-      {el.name}
-    </Operation>,    
-    )})
-  }
+      }            
+  })
   
-    
-  
-  
-
-    return (
-      <Wrapper>
-        <TabsWrapper>          
+    return (      
+        <TabsWrapper>                 
           {tabsArray}
-        </TabsWrapper>
-        <DisplayWindow>
-          {displayedOperations}
-        </DisplayWindow>
-        <CodeWrapper><Code ="javascript">hey lol</Code></CodeWrapper>
-      </Wrapper>    
-      
+        </TabsWrapper>      
     );
   }
 
