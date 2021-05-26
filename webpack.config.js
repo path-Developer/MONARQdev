@@ -1,25 +1,26 @@
-const webpack = require('webpack')
-const path = require('path')
-const { SourceMapDevToolPlugin } = require("webpack");
+/* eslint-disable no-dupe-keys */
+const path = require("path");
+const webpack = require("webpack");
+
 module.exports = {
-  entry: path.resolve(__dirname, 'index'),
+  entry: path.resolve(__dirname, "index"),
   output: {
-    path: __dirname + '/dist',
-    publicPath: '/',
-    filename: 'bundle.js'
+    path: path.join(__dirname, "foo.js"),
+    publicPath: "/",
+    filename: "bundle.js",
   },
-  mode:'development',
+  mode: "development",
   plugins: [
     new webpack.ProvidePlugin({
-      process: 'process/browser',
+      process: "process/browser",
     }),
-    new SourceMapDevToolPlugin({
-      filename: "[file].map"
+    new webpack.SourceMapDevToolPlugin({
+      filename: "[file].map",
     }),
   ],
   devtool: "source-map",
   devServer: {
-    contentBase: path.resolve(__dirname, 'public'),
+    contentBase: path.resolve(__dirname, "public"),
     hot: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
@@ -28,24 +29,31 @@ module.exports = {
       https: true,
     },
   },
-  
+  node: {
+    __dirname: true,
+  },
+
   module: {
     rules: [
-        {
+      {
         test: /\.jsx?$/, // compilation to es6
-        enforce: 'pre',
-        use: ['source-map-loader'],
+        enforce: "pre",
+        use: ["source-map-loader"],
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ['@babel/react'],
+            presets: ["@babel/react"],
           },
         },
       },
       {
-        test: /(\.css)$/, 
-        use: ['style-loader', 'css-loader']}
-    ]
-  }
-}
+        test: /(\.css)$/,
+        use: ["style-loader", "css-loader"],
+      },
+    ],
+  },
+  resolve: {
+    extensions: [".js", ".jsx"],
+  },
+};
