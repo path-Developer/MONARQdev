@@ -1,8 +1,9 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 const path = require("path");
-//import path from "path";
+// import path from "path";
 const express = require("express");
-//import express from "express";
+// import express from "express";
 
 const app = express();
 const PORT = 3000;
@@ -11,31 +12,30 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// serving static files
-app.get(
-  "/",
-  (req, res) => express.static(path.join(__dirname, "../public"))
-  // return res.status(200).sendFile(path.join(__dirname, "../public/index.html"));
-);
+// serving Index File\
+// app.get('/dist', (req, res) => {
+//   return res.status(200).sendFile(path.resolve(__dirname, '../dist/bundle.js'));
+// });
 
-app.get("/bundle.js", (req, res) => {
-  return res.status(200).sendFile(path.join(__dirname, "../index.js"));
+app.use("/dist", express.static(path.resolve(__dirname, "../dist")));
+app.get("/", (req, res) => {
+  return res.sendFile(path.resolve(__dirname, "../index.html"));
 });
+
+// serving bundle.js files from dist folder
 
 // if request is made to no defined endpoint
 app.use("*", (req, res) => res.status(404).json("Not Found"));
 
 // global middleware handler
 // eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  const defaultErr = {
-    log: "Express error handler caught unknown middleware error",
-    status: 400,
-    message: { err: "An error occured" },
-  };
-  const errorObj = Object.assign(defaultErr, err);
-  console.log(errorObj.log);
-  return res.status(errorObj.status).json(errorObj.message);
+app.use(function (err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get("env") === "development" ? err : {};
+
+  console.error(err);
+  res.status(err.status || 500).send(res.locals.message);
 });
 
 // starts the server
