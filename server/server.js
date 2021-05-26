@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 const path = require("path");
-
+//import path from "path";
 const express = require("express");
+//import express from "express";
 
 const app = express();
 const PORT = 3000;
@@ -11,9 +12,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // serving static files
-app.get("/", (req, res) => {
-  return res.status(200).sendFile(path.join(__dirname, "../public/index.html"));
-});
+app.get(
+  "/",
+  (req, res) => express.static(path.join(__dirname, "../public"))
+  // return res.status(200).sendFile(path.join(__dirname, "../public/index.html"));
+);
 
 app.get("/bundle.js", (req, res) => {
   return res.status(200).sendFile(path.join(__dirname, "../index.js"));
