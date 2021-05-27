@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-prototype-builtins */
 import React, { useState, useRef, useEffect } from "react";
 import useUndo from "use-undo";
@@ -6,6 +7,7 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Box,
   CloseButton,
   Grid,
   GridItem,
@@ -56,17 +58,17 @@ const Visualizer = () => {
         if (defaultParams !== "") {
           newConfigString.push(`
               ${meth[0]}: {
-                operation: ${operation}
+                operation: ${operation},
                 defaultParams: {${defaultParams}}
               }
-            }
+            },
             `);
         } else {
           newConfigString.push(`            
           ${meth[0]}: {
-            operation: ${operation}
-            }
-          }
+            operation: ${operation},
+            },
+          },
         `);
         }
       });
@@ -74,7 +76,7 @@ const Visualizer = () => {
     const joinedConfigString = newConfigString.join("");
     setConfigString(joinedConfigString);
   };
-  const errorBox = (flag) => {
+  const errorBox = () => {
     if (error === true)
       return (
         <Alert status="error">
@@ -106,45 +108,53 @@ const Visualizer = () => {
     <Grid templateColumns="repeat(3, 1fr)" gap={2}>
       <GridItem colSpan={3}>{errorBox()}</GridItem>
       <GridItem>
-        <EndpointInput setMethod={setMethod} setEndpoint={setEndpoint} />
-        <HStack>
+        <Box h={500}>
+          <EndpointInput setMethod={setMethod} setEndpoint={setEndpoint} />
+          <HStack>
+            <Input
+              placeholder="Enter GraphQL URL"
+              type="text"
+              id="gqlURL"
+              onChange={(e) => setGqlURL(e.target.value)}
+            />
+            <Button
+              type="button"
+              onClick={() => {
+                getSchema.current.getIntrospection();
+              }}
+            >
+              get schema
+            </Button>
+          </HStack>
+          <Box h={350}>
+            <Operations
+              passedRef={getSchema}
+              gqlURL={gqlURL}
+              setOperation={setOperation}
+            />
+          </Box>
           <Input
-            placeholder="Enter GraphQL URL"
+            placeholder="Enter Default Parameters (Optional)"
             type="text"
             id="gqlURL"
-            onChange={(e) => setGqlURL(e.target.value)}
+            onChange={(e) => setDefaultParams(e.target.value)}
           />
-          <Button
-            type="button"
-            onClick={() => {
-              getSchema.current.getIntrospection();
-            }}
-          >
-            get schema
-          </Button>
-        </HStack>
-        <Operations
-          passedRef={getSchema}
-          gqlURL={gqlURL}
-          setOperation={setOperation}
-        />
-        <Input
-          placeholder="Enter Default Parameters (Optional)"
-          type="text"
-          id="gqlURL"
-          onChange={(e) => setDefaultParams(e.target.value)}
-        />
 
-        <Button type="button" onClick={() => configArrayBuilder()}>
-          add to config
-        </Button>
-        <Button type="button" onClick={undoConfigArray} disabled={!canUndo}>
-          undo
-        </Button>
+          <Button type="button" onClick={() => configArrayBuilder()}>
+            add to config
+          </Button>
+          <Button type="button" onClick={undoConfigArray} disabled={!canUndo}>
+            undo
+          </Button>
+        </Box>
       </GridItem>
 
       <GridItem colSpan={2}>
-        <ConfigVis configString={configString} />
+        <Box h={500} bg="#282b2e" borderRadius={9}>
+          {" "}
+          ;
+          <ConfigVis configString={configString} />
+        </Box>
       </GridItem>
     </Grid>
   );
