@@ -1,9 +1,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 const path = require("path");
-// import path from "path";
+
 const express = require("express");
-// import express from "express";
 
 const app = express();
 const PORT = 3000;
