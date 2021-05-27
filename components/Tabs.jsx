@@ -1,10 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from "react";
-import styled from "styled-components";
-
-const TabsWrapper = styled.section`
-  display: flex;
-`;
+import { Button } from "@chakra-ui/react";
 
 const Tabs = (props) => {
   const { types } = props;
@@ -17,19 +13,18 @@ const Tabs = (props) => {
   Object.values(types).forEach((type) => {
     if (type) {
       tabsArray.push(
-        <button
-          type="button"
+        <Button
           key={type.toString().toLowerCase()}
           id={type}
           onClick={(e) => handleClick(e.currentTarget.id)}
         >
           {Object.values(type)}
-        </button>
+        </Button>
       );
     }
   });
 
-  return <TabsWrapper>{tabsArray}</TabsWrapper>;
+  return <div>{tabsArray}</div>;
 };
 
 export default Tabs;

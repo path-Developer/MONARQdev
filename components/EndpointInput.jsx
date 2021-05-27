@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/jsx-boolean-value */
 import React from "react";
+import { Input, Select } from "@chakra-ui/react";
 
 const EndpointInput = (props) => {
-  const { setMethod }= props;
+  const { setMethod } = props;
   const { setEndpoint } = props;
   const methodHandler = (evt) => {
     setMethod(evt.target.value);
@@ -13,24 +14,23 @@ const EndpointInput = (props) => {
   };
   return (
     <div>
-      <label htmlFor="method">
-        <select
-          defaultValue=""
-          name="method"
-          id="method"
-          onChange={(evt) => methodHandler(evt)}
-        >
-          <option value="" disabled={true}>
-            choose method
-          </option>
-          <option value="get">GET</option>
-          <option value="post">POST</option>
-          <option value="put">PUT</option>
-          <option value="delete">DELETE</option>
-          <option value="patch">PATCH</option>
-        </select>
-      </label>
-      <input type="text" onChange={(evt) => endpointHandler(evt)} />
+      <Input
+        placeholder="enter desired REST API endpoint"
+        type="text"
+        onChange={(evt) => endpointHandler(evt)}
+      />
+      <Select
+        placeholder="Choose Method"
+        name="method"
+        id="method"
+        onChange={(evt) => methodHandler(evt)}
+      >
+        <option value="get">GET</option>
+        <option value="post">POST</option>
+        <option value="put">PUT</option>
+        <option value="delete">DELETE</option>
+        <option value="patch">PATCH</option>
+      </Select>
     </div>
   );
 };
