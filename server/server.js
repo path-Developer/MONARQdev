@@ -28,7 +28,7 @@ app.use("*", (req, res) => res.status(404).json("Not Found"));
 
 // global middleware handler
 // eslint-disable-next-line no-unused-vars
-app.use(function (err, req, res, next) {
+app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
