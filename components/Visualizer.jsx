@@ -1,66 +1,152 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
+/* eslint-disable no-prototype-builtins */
+import React, { useState, useRef, useEffect } from "react";
+import useUndo from "use-undo";
+import {
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  CloseButton,
+  Grid,
+  GridItem,
+  Input,
+  Button,
+  HStack,
+} from "@chakra-ui/react";
 import Operations from "./Operations";
 import EndpointInput from "./EndpointInput";
 import ConfigVis from "./ConfigVis";
-
-const VizWrapper = styled.section`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-`;
-const EndWrapper = styled.section`
-  grid-column: 1 / span 1;
-`;
-const OperWrapper = styled.section`
-  grid-column: 2 / span 1;
-`;
-const ConfigWrapper = styled.section`
-  grid-column: 3 / span 4;
-`;
 
 const Visualizer = () => {
   const [operation, setOperation] = useState("");
   const [endpoint, setEndpoint] = useState("");
   const [method, setMethod] = useState("");
-  const [configString, setConfigString] = useState(``);
-  const [configArray, setConfigArray] = useState([]);
+  const [configString, setConfigString] = useState([]);
+  const [gqlURL, setGqlURL] = useState("");
+  const [defaultParams, setDefaultParams] = useState("");
+  const [error, setError] = useState(false);
+  const [configArray, { set: setConfigArray, undo: undoConfigArray, canUndo }] =
+    useUndo([]);
+  const { present: presentConfigArray } = configArray;
+
+  const getSchema = useRef(null);
 
   const configArrayBuilder = () => {
-    const newConfigArray = [...configArray];
-    newConfigArray.push([endpoint, method, operation]);
-    setConfigArray(newConfigArray);
+    if (!endpoint || !method || !operation) return setError(true);
+    const newConfigArray = [...presentConfigArray];
+    if (newConfigArray.some((el) => el[0].endpoint === endpoint)) {
+      const idx = newConfigArray.findIndex((el) => el[0].endpoint === endpoint);
+      newConfigArray[idx][0].method.push([
+        method,
+        { operation, defaultParams },
+      ]);
+      setConfigArray(newConfigArray);
+    } else {
+      newConfigArray.push([
+        { endpoint, method: [[method, { operation, defaultParams }]] },
+      ]);
+      setConfigArray(newConfigArray);
+    }
   };
-
   const configStringBuilder = () => {
-    if (configArray.length === 0) return;
-    configArray.forEach(() => {
-      setConfigString(configArray.join());
+    const newConfigString = [];
+    presentConfigArray.forEach((point) => {
+      newConfigString.push(`\n\t'${point[0].endpoint}': {`);
+      point[0].method.forEach((meth) => {
+        if (defaultParams !== "") {
+          newConfigString.push(`
+              ${meth[0]}: {
+                operation: ${operation}
+                defaultParams: {${defaultParams}}
+              }
+            }
+            `);
+        } else {
+          newConfigString.push(`            
+          ${meth[0]}: {
+            operation: ${operation}
+            }
+          }
+        `);
+        }
+      });
     });
+    const joinedConfigString = newConfigString.join("");
+    setConfigString(joinedConfigString);
+  };
+  const errorBox = (flag) => {
+    if (error === true)
+      return (
+        <Alert status="error">
+          <AlertIcon />
+          <AlertTitle mr={2}>Missing Form Information</AlertTitle>
+          <AlertDescription mr={1}>
+            Endpoints, methods, and operations are required fields.
+          </AlertDescription>
+          <CloseButton
+            position="absolute"
+            right="8px"
+            top="8px"
+            onClick={() => {
+              setError(false);
+            }}
+          />
+        </Alert>
+      );
   };
 
   useEffect(() => {
-    configStringBuilder();
+    if (configArray.length !== 0) {
+      configStringBuilder();
+    }
   }, [configArray]);
+  useEffect(() => {}, [error]);
 
   return (
-    <VizWrapper>
-      <EndWrapper>
-        <EndpointInput
-          setMethod={setMethod}
-          setEndpoint={setEndpoint}
-          setConfigArray={setConfigArray}
+    <Grid templateColumns="repeat(3, 1fr)" gap={2}>
+      <GridItem colSpan={3}>{errorBox()}</GridItem>
+      <GridItem>
+        <EndpointInput setMethod={setMethod} setEndpoint={setEndpoint} />
+        <HStack>
+          <Input
+            placeholder="Enter GraphQL URL"
+            type="text"
+            id="gqlURL"
+            onChange={(e) => setGqlURL(e.target.value)}
+          />
+          <Button
+            type="button"
+            onClick={() => {
+              getSchema.current.getIntrospection();
+            }}
+          >
+            get schema
+          </Button>
+        </HStack>
+        <Operations
+          passedRef={getSchema}
+          gqlURL={gqlURL}
+          setOperation={setOperation}
         />
-        <button type="button" onClick={() => configArrayBuilder()}>
+        <Input
+          placeholder="Enter Default Parameters (Optional)"
+          type="text"
+          id="gqlURL"
+          onChange={(e) => setDefaultParams(e.target.value)}
+        />
+
+        <Button type="button" onClick={() => configArrayBuilder()}>
           add to config
-        </button>
-      </EndWrapper>
-      <OperWrapper>
-        <Operations setOperation={setOperation} />
-      </OperWrapper>
-      <ConfigWrapper>
+        </Button>
+        <Button type="button" onClick={undoConfigArray} disabled={!canUndo}>
+          undo
+        </Button>
+      </GridItem>
+
+      <GridItem colSpan={2}>
         <ConfigVis configString={configString} />
-      </ConfigWrapper>
-    </VizWrapper>
+      </GridItem>
+    </Grid>
   );
 };
 export default Visualizer;
