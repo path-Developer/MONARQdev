@@ -3,13 +3,13 @@ const path = require("path");
 const webpack = require("webpack");
 
 module.exports = {
-  entry: path.resolve(__dirname, "index"),
+  entry: "./public/index.js",
   output: {
-    path: path.join(__dirname, "foo.js"),
-    publicPath: "/",
+    path: path.resolve(__dirname, "./dist"),
+    publicPath: "/dist/",
     filename: "bundle.js",
   },
-  mode: "development",
+  mode: process.env.NODE_ENV,
   plugins: [
     new webpack.ProvidePlugin({
       process: "process/browser",
@@ -20,13 +20,23 @@ module.exports = {
   ],
   devtool: "source-map",
   devServer: {
-    contentBase: path.resolve(__dirname, "public"),
+    host: "localhost",
+    port: 8080,
+    publicPath: "/dist/",
+    // contentBase: path.resolve(__dirname, "./build"),
     hot: true,
+    historyApiFallback: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
       "Access-Control-Allow-Headers": "*",
       https: true,
+    },
+    proxy: {
+      "/api/**": {
+        target: "http://localhost:3000/",
+        secure: false,
+      },
     },
   },
   node: {
