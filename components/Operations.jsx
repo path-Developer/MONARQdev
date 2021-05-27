@@ -1,24 +1,24 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
+import React, { useState, useEffect, useImperativeHandle } from "react";
+
 import Tabs from "./Tabs";
 import TabsPane from "./TabsPane";
 
-const Wrapper = styled.section`
-  display: flex;
-  flex-direction: column;
-`;
-
 const Operations = (props) => {
   const { setOperation } = props;
+  const { gqlURL } = props;
+  const { passedRef } = props;
   const introspectionQuery = {
     query:
       "{__schema {queryType {name fields {name}}mutationType {name fields {name}}}}",
   };
   const [introspectedTypes, setIntrospectedTypes] = useState({});
+  const [currentTab, setCurrentTab] = useState("");
+  const [isLoaded, setIsLoaded] = useState();
 
   const getIntrospection = async () => {
-    const rawResponse = await fetch("https://api.spacex.land/graphql/", {
+    setIsLoaded(false);
+    const rawResponse = await fetch(`${gqlURL}`, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -27,36 +27,40 @@ const Operations = (props) => {
       body: JSON.stringify(introspectionQuery),
     });
     const response = await rawResponse.json();
+    setIsLoaded(true);
     // eslint-disable-next-line no-underscore-dangle
     setIntrospectedTypes(response.data.__schema);
   };
 
-  const [currentTab, setCurrentTab] = useState("");
+  useImperativeHandle(passedRef, () => ({
+    getIntrospection,
+  }));
 
-  useEffect(() => {}, [currentTab]);
+  useEffect(() => {}, [currentTab, isLoaded]);
 
-  useEffect(() => {
-    getIntrospection();
-  }, []);
+  // useEffect(() => {
+  //   getIntrospection();
+  // }, [gqlURL]);
 
   const types = [];
   // for (const key in introspectedTypes) {
   //   types.push(introspectedTypes[key].name);
   // }
   Object.keys(introspectedTypes).forEach((key) => {
-    types.push(introspectedTypes[key].name);
+    if (introspectedTypes[key]) types.push(introspectedTypes[key].name);
   });
   const operations = Object.values(introspectedTypes);
 
   return (
-    <Wrapper>
+    <div>
       <Tabs setCurrentTab={setCurrentTab} types={types} />
       <TabsPane
+        isLoaded={isLoaded}
         currentTab={currentTab}
         operations={operations}
         setOperation={setOperation}
       />
-    </Wrapper>
+    </div>
   );
 };
 

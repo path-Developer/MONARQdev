@@ -1,59 +1,57 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-
-const DisplayWindow = styled.section`
-  display: flex;
-  flex-direction: column;
-`;
+import { Radio, RadioGroup, Stack, Spinner } from "@chakra-ui/react";
 
 const TabsPane = (props) => {
   const { currentTab } = props;
   const { operations } = props;
   const { setOperation } = props;
+  const { isLoaded } = props;
 
-  const [checked, setChecked] = useState("");
+  const [value, setValue] = useState("");
 
   useEffect(() => {}, [currentTab]);
-  useEffect(() => {}, [checked]);
+  useEffect(() => {
+    setOperation(value);
+  }, [value]);
 
-  const selectHandler = (evt) => {
-    setChecked(evt.target.value);
-    setOperation(evt.target.value);
-  };
   const operationsObject = {};
 
   operations.forEach((el) => {
-    operationsObject[el.name] = el.fields;
+    if (el) operationsObject[el.name] = el.fields;
   });
 
   const displayArray = [];
+  const display = () => {
+    if (isLoaded === false) return <Spinner />;
+    if (isLoaded === true) return displayArray;
+    return <p>Enter URL above to get schema</p>;
+  };
+
   Object.keys(operationsObject).forEach((key) => {
     if (key === currentTab) {
       displayArray.push(
         operationsObject[key].forEach((operation) => {
           if (key === currentTab)
             displayArray.push(
-              <div>
-                <input
-                  type="radio"
-                  id={`${key}`}
-                  value={`${operation.name}`}
-                  name="operation"
-                  key={`${operation.name}Button`}
-                  onClick={(evt) => selectHandler(evt)}
-                />
-                <label
-                  key={`${operation.name}Label`}
-                  htmlFor={`${operation.name}`}
-                >{`${operation.name}`}</label>
-              </div>
+              <Radio
+                id={`${key}`}
+                value={`${operation.name}`}
+                name="operation"
+                key={`${operation.name}Select`}
+              >
+                {operation.name}
+              </Radio>
             );
         })
       );
     }
   });
-  return <DisplayWindow>{displayArray}</DisplayWindow>;
+  return (
+    <RadioGroup onChange={setValue} value={value}>
+      <Stack>{display()}</Stack>
+    </RadioGroup>
+  );
 };
 
 export default TabsPane;
